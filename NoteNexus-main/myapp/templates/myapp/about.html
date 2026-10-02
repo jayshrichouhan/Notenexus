@@ -1,0 +1,397 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}About NoteNexus{% endblock %}
+
+{% block extra_css %}
+<style>
+    .about-hero {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #008f26 100%);
+        color: white;
+        padding: 6rem 2rem;
+        text-align: center;
+        border-radius: 0 0 40px 40px;
+        margin-bottom: 4rem;
+    }
+
+    .about-hero h1 {
+        font-size: 3.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .about-hero p {
+        font-size: 1.2rem;
+        max-width: 800px;
+        margin: 0 auto;
+        opacity: 0.9;
+        line-height: 1.6;
+    }
+
+    .about-section {
+        max-width: 1200px;
+        margin: 0 auto 5rem;
+        padding: 0 2rem;
+    }
+
+    .section-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .section-header h2 {
+        font-size: 2.5rem;
+        color: var(--text-dark);
+        margin-bottom: 1rem;
+    }
+
+    .section-header p {
+        color: var(--text-gray);
+        font-size: 1.1rem;
+    }
+
+    /* Features Grid */
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+
+    .feature-card {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 16px;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.3s ease;
+        border: 1px solid var(--border-color);
+        text-align: center;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary-color);
+    }
+
+    .feature-icon {
+        width: 64px;
+        height: 64px;
+        background: #e0f5e5;
+        color: var(--primary-color);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+    }
+
+    .feature-card h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        color: var(--text-dark);
+    }
+
+    .feature-card p {
+        color: var(--text-gray);
+        line-height: 1.6;
+    }
+
+    /* Two Column Layout for Forms */
+    .contact-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4rem;
+        align-items: start;
+        background: white;
+        padding: 4rem;
+        border-radius: 24px;
+        box-shadow: var(--shadow-md);
+    }
+
+    .contact-messages {
+        grid-column: 1 / -1;
+        margin-bottom: 0.5rem;
+    }
+
+    .contact-message {
+        padding: 1rem;
+        border-radius: 12px;
+        background: #ecfdf5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+    }
+
+    .form-wrapper h3 {
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+        color: var(--text-dark);
+    }
+
+    .form-wrapper p {
+        color: var(--text-gray);
+        margin-bottom: 2rem;
+    }
+
+    .about-form .form-group {
+        margin-bottom: 0.5rem;
+    }
+
+    .about-form label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: var(--text-dark);
+    }
+
+    .about-form input,
+    .about-form textarea {
+        width: 100%;
+        padding: 1rem;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .about-form input:focus,
+    .about-form textarea:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(0, 168, 45, 0.1);
+    }
+
+    .about-form textarea {
+        resize: vertical;
+        min-height: 120px;
+    }
+
+    .btn-block {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1.1rem;
+    }
+
+    .admin-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        background: #fff4e5;
+        color: #ff9800;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    /* Align Radio Buttons (Feedback Type) */
+    .about-form ul {
+        list-style: none;
+        padding: 0;
+        display: flex;
+        gap: 1.5rem;
+        /* Space between options */
+        margin-top: 0.5rem;
+    }
+
+    .about-form ul li {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.95rem;
+        color: var(--text-gray);
+    }
+
+    /* Fix individual radio/checkbox sizing */
+    .about-form input[type="radio"],
+    .about-form input[type="checkbox"] {
+        width: auto;
+        /* Overrides your 100% width rule */
+        margin: 0;
+        cursor: pointer;
+    }
+
+    /* Align the "Urgent" Checkbox line */
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    @media (max-width: 992px) {
+        .contact-container {
+            grid-template-columns: 1fr;
+            padding: 2rem;
+            gap: 3rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block navbar %}
+<a href="{% url 'about' %}">About</a>
+<a href="{% url 'auth' %}?tab=login" class="login-link">Log in</a>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="about-hero">
+    <div class="anim-fade-up">
+        <h1>About <span style="opacity:0.9;">NoteNexus</span></h1>
+        <p>NoteNexus is a premier educational platform designed to bridge the gap between students and high-quality
+            academic
+            resources. We believe that access to excellent study materials and collaborative learning environments
+            should be
+            universal.</p>
+    </div>
+    <!-- Stats Row -->
+    <div style="display:flex;gap:3rem;justify-content:center;margin-top:3rem;flex-wrap:wrap;"
+        class="anim-fade-up anim-delay-2">
+        <div style="text-align:center;">
+            <div style="font-size:2rem;font-weight:800;">12,000+</div>
+            <div style="font-size:0.9rem;opacity:0.8;">Students</div>
+        </div>
+        <div style="text-align:center;">
+            <div style="font-size:2rem;font-weight:800;">5,000+</div>
+            <div style="font-size:0.9rem;opacity:0.8;">Notes Shared</div>
+        </div>
+        <div style="text-align:center;">
+            <div style="font-size:2rem;font-weight:800;">200+</div>
+            <div style="font-size:0.9rem;opacity:0.8;">Instructors</div>
+        </div>
+        <div style="text-align:center;">
+            <div style="font-size:2rem;font-weight:800;">98%</div>
+            <div style="font-size:0.9rem;opacity:0.8;">Satisfaction</div>
+        </div>
+    </div>
+    <!-- Banner image -->
+    <div style="max-width:900px;margin:2.5rem auto 0;border-radius:20px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3);"
+        class="anim-fade-up anim-delay-3">
+        <img src="https://images.unsplash.com/photo-1531482615713-2afd69097998?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+            alt="Students collaborating" id="about-banner-img"
+            style="width:100%;height:280px;object-fit:cover;display:block;">
+    </div>
+</section>
+
+<!-- Why NoteNexus & Features -->
+<section class="about-section">
+    <div class="section-header">
+        <h2>Why NoteNexus?</h2>
+        <p>Discover how our platform empowers your educational journey</p>
+    </div>
+
+    <div class="features-grid">
+        <!-- Note Taking -->
+        <div class="feature-card reveal">
+            <div class="feature-icon">
+                <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
+                    <path
+                        d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+                </svg>
+            </div>
+            <h3>Note Taking</h3>
+            <p>Access a vast repository of meticulously crafted notes, Previous Year Questions (PYQs), and study guides
+                across various disciplines. Organize your materials efficiently and study smarter.</p>
+        </div>
+
+        <!-- Collaboration -->
+        <div class="feature-card reveal anim-delay-2">
+            <div class="feature-icon" style="background: #e5f0ff; color: #2196f3;">
+                <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
+                    <path
+                        d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+                </svg>
+            </div>
+            <h3>Collaboration</h3>
+            <p>Engage in active discussions, ask doubts, and collaborate with peers and instructors in our community
+                forums. Learning is better when we do it together.</p>
+        </div>
+
+        <!-- Students -->
+        <div class="feature-card reveal anim-delay-3">
+            <div class="feature-icon" style="background: #f3e5f5; color: #9c27b0;">
+                <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
+                    <path
+                        d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.72v3.71z" />
+                </svg>
+            </div>
+            <h3>For Students</h3>
+            <p>Designed with the modern student in mind. Track your progress, save important notes for later, and
+                customize your learning experience with personalized dashboards.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Contact & Feedback Section -->
+<section class="about-section">
+    <div class="contact-container reveal">
+
+        {% if messages %}
+        <div class="messages contact-messages">
+            {% for message in messages %}
+            <div class="contact-message">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Contact Us Form -->
+        <div class="form-wrapper">
+            <h3>Contact Us</h3>
+            <p>Have questions or need support? Reach out to our team.</p>
+
+            <form id="contact-form" class="about-form" action="{% url 'about' %}" method="POST">
+                {% csrf_token %}
+                {{ contact_form.non_field_errors }}
+                <div class="form-group">
+                    <label for="id_contact-from_name">Full Name</label>
+                    {{ contact_form.from_name }}
+                </div>
+                <div class="form-group">
+                    <label for="id_contact-reply_to">Email Address</label>
+                    {{ contact_form.reply_to }}
+                </div>
+                <div class="form-group">
+                    <label for="id_contact-subject">Subject</label>
+                    {{ contact_form.subject }}
+                </div>
+                <div class="form-group">
+                    <label for="id_contact-message">Message</label>
+                    {{ contact_form.message }}
+                </div>
+                <button type="submit" name="contact-submit" class="btn-submit btn-block">Send Message</button>
+            </form>
+        </div>
+
+        <!-- Admin Feedback Form -->
+        <div class="form-wrapper">
+            <span class="admin-badge">Admin Access</span>
+            <h3>Platform Feedback</h3>
+            <p>Help us improve! Send your suggestions directly to the admin team.</p>
+
+            <form class="about-form" action="{% url 'about' %}" method="POST">
+                {% csrf_token %}
+                {{ feedback_form.non_field_errors }}
+                <div class="form-group">
+                    <label>Feedback Type</label>
+                    {{ feedback_form.feedback_type }}
+                </div>
+                <div class="form-group">
+                    <label for="id_feedback-message">Your Feedback</label>
+                    {{ feedback_form.message }}
+                </div>
+                <div class="form-group checkbox-group">
+                    {{ feedback_form.urgent }}
+                    <label for="{{ feedback_form.urgent.id_for_label }}"
+                        style="margin: 0; font-weight: normal; color: var(--text-gray); font-size: 0.9rem; cursor: pointer;">
+                        Mark as urgent <span style="opacity: 0.7;">(Critical bugs only)</span>
+                    </label>
+                </div>
+                <button type="submit" name="feedback-submit" class="btn-submit btn-block"
+                    style="background: var(--text-dark);">Submit to Admins</button>
+            </form>
+        </div>
+
+    </div>
+</section>
+{% endblock %}

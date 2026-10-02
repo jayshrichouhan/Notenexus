@@ -1,0 +1,102 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}NoteNexus{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <header>
+        <div class="logo">
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="var(--primary-color)" style="margin-right: 8px;">
+                <path d="M4 4h16v16H4V4zm2 2v12h12V6H6zm2 2h8v2H8V8zm0 4h8v2H8v-2z" />
+            </svg>
+            NoteNexus
+        </div>
+        <nav class="nav-links">
+            {% block navbar %}
+            <a href="{% url 'about' %}">About</a>
+            <a href="{% url 'auth' %}">Log in</a>
+            <a href="{% url 'auth' %}" class="login-link">Sign up</a>
+            {% endblock %}
+        </nav>
+    </header>
+
+    <main>
+        {% if messages %}
+        <div class="site-messages">
+            {% for message in messages %}
+            <div class="site-message site-message-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-col">
+                <div class="logo" style="margin-bottom: 1rem;">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="var(--primary-color)"
+                        style="margin-right: 8px;">
+                        <path d="M4 4h16v16H4V4zm2 2v12h12V6H6zm2 2h8v2H8V8zm0 4h8v2H8v-2z" />
+                    </svg>
+                    NoteNexus
+                </div>
+                <p style="color: var(--text-gray); font-size: 0.9rem;">Choose a language:
+                    <strong>
+                        <select name="language" id="" style="color: var(--text-gray); font-size: 0.9rem;">
+                            <option value="english">English</option>
+                            <option value="hindi">Hindi</option>
+                            <option value="spanish">Spanish</option>
+                            <option value="french">French</option>
+                            <option value="german">German</option>
+                        </select>
+                    </strong>
+                </p>
+            </div>
+            <div class="footer-col">
+                <h4>Solutions</h4>
+                <ul>
+                    <li><a href="{% url 'about' %}">Why NoteNexus</a></li>
+                    <li><a href="{% url 'about' %}">Note taking</a></li>
+                    <li><a href="{% url 'about' %}">Collaboration</a></li>
+                    <li><a href="{% url 'about' %}">Students</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="#">Help & Learning</a></li>
+                    <li><a href="#">Forum</a></li>
+                    <li><a href="{% url 'about' %}">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Get Started</h4>
+                <ul>
+                    <li><a href="{% url 'auth' %}?tab=signup">Sign up for free</a></li>
+                    <li><a href="{% url 'auth' %}?tab=login">Log in</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div>&copy; 2026 NoteNexus Platform. All rights reserved.</div>
+            <div class="footer-bottom-links">
+                <a href="#">Security</a>
+                <a href="#">Legal</a>
+                <a href="#">Privacy</a>
+            </div>
+        </div>
+    </footer>
+
+    <button id="back-to-top" class="back-to-top" aria-label="Back to top">↑</button>
+    <script src="{% static 'js/site.js' %}"></script>
+</body>
+</html>

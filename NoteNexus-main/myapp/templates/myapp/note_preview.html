@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ note.title }} Preview</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f8fafc;
+            color: #1f2937;
+        }
+
+        .preview-wrap {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.85rem 1rem;
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .preview-bar h1 {
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        .preview-bar a {
+            color: #047857;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .preview-body {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            align-items: stretch;
+            justify-content: center;
+        }
+
+        .preview-body img {
+            max-width: 100%;
+            max-height: calc(100vh - 58px);
+            object-fit: contain;
+            align-self: center;
+        }
+
+        .preview-body object,
+        .preview-body iframe {
+            width: 100%;
+            height: calc(100vh - 58px);
+            border: 0;
+            background: #fff;
+        }
+
+        .preview-fallback {
+            margin: auto;
+            max-width: 520px;
+            text-align: center;
+            padding: 2rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="preview-wrap">
+        <div class="preview-bar">
+            <h1>{{ note.title }}</h1>
+            <a href="{{ note.document_url }}" target="_blank" rel="noopener">Open file</a>
+        </div>
+        <div class="preview-body">
+            {% if note.is_image %}
+            <img src="{{ note.document_url }}" alt="{{ note.title }}">
+            {% elif note.is_pdf %}
+            <object data="{{ note.document_url }}" type="application/pdf">
+                <div class="preview-fallback">
+                    <p>This PDF could not be displayed inside the preview.</p>
+                    <a href="{{ note.document_url }}" target="_blank" rel="noopener">Open file</a>
+                </div>
+            </object>
+            {% else %}
+            <div class="preview-fallback">
+                <p>Preview is available for images and PDFs. This file type may need to be opened directly.</p>
+                <a href="{{ note.document_url }}" target="_blank" rel="noopener">Open file</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+
+</html>

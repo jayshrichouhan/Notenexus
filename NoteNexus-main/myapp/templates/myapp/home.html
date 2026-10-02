@@ -1,0 +1,172 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}NoteNexus - Your Ultimate Learning Hub{% endblock %}
+
+{% block extra_css %}
+<style>
+  .hero-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 4rem auto;
+    padding: 0 2rem;
+    gap: 4rem;
+    min-height: 72vh;
+  }
+  .hero-text {
+    flex: 1;
+    animation: fadeInLeft 0.9s ease both;
+  }
+  .hero-title {
+    font-size: 3.6rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 1.5rem;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+  .hero-title span { color: var(--primary-color); }
+  .hero-description {
+    font-size: 1.2rem;
+    color: var(--text-gray);
+    margin-bottom: 2.5rem;
+    line-height: 1.7;
+    max-width: 480px;
+  }
+  .hero-buttons { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .hero-btn {
+    padding: 0.9rem 2rem;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    display: inline-block;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), #00c935);
+    color: white;
+    box-shadow: 0 6px 20px rgba(0,168,45,0.35);
+  }
+  .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,168,45,0.45); }
+  .btn-secondary {
+    background: transparent;
+    color: var(--text-dark);
+    border: 2px solid var(--border-color);
+  }
+  .btn-secondary:hover { border-color: var(--primary-color); color: var(--primary-color); }
+  .hero-image-wrapper {
+    flex: 1;
+    position: relative;
+    animation: float 6s ease-in-out infinite;
+    filter: drop-shadow(0 20px 40px rgba(0,168,45,0.2));
+  }
+  .hero-image-wrapper::before {
+    content: '';
+    position: absolute;
+    top: -20px; left: -20px; right: 20px; bottom: 20px;
+    background: linear-gradient(135deg, #d4f5dc, #e8f5e9);
+    border-radius: 20px;
+    z-index: -1;
+  }
+  .hero-image { width: 100%; border-radius: 20px; display: block; object-fit: cover; }
+  .hero-stats {
+    display: flex;
+    gap: 2.5rem;
+    margin-top: 2.5rem;
+  }
+  .hero-stat-num { font-size: 1.8rem; font-weight: 800; color: var(--text-dark); }
+  .hero-stat-label { font-size: 0.85rem; color: var(--text-gray); }
+  /* Features/Cards */
+  .top-content { padding: 5rem 0; background: var(--white); }
+  .top-content-header { text-align: center; margin-bottom: 3.5rem; }
+  .top-content-header h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; }
+  .top-content-header p { color: var(--text-gray); font-size: 1.05rem; }
+  .top-card { border: 1px solid var(--border-color); transition: all 0.3s ease; padding: 2rem; border-radius: 16px; }
+  .top-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-md); border-color: rgba(0,168,45,0.3); }
+  .top-card-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; }
+  .top-card h3 { font-size: 1.2rem; margin-bottom: 0.75rem; color: var(--text-dark); }
+  .top-card p { color: var(--text-gray); font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.6; }
+  .top-card-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--text-gray); font-weight: 500; border-top: 1px solid var(--border-color); padding-top: 1rem; }
+  @media (max-width: 768px) {
+    .hero-container { flex-direction: column; text-align: center; margin: 2rem auto; gap: 2rem; }
+    .hero-title { font-size: 2.4rem; }
+    .hero-buttons { justify-content: center; }
+    .hero-stats { justify-content: center; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero-container">
+  <div class="hero-text">
+    <h1 class="hero-title">Welcome to <span>NoteNexus</span></h1>
+    <p class="hero-description">
+      Your centralized platform to share, discover, and organize academic notes. Connect with instructors, access premium study materials, and take your learning to the next level.
+    </p>
+    <div class="hero-buttons">
+      <a href="{% url 'auth' %}?tab=signup" class="hero-btn btn-primary">Get Started Free</a>
+      <a href="{% url 'auth' %}?tab=login" class="hero-btn btn-secondary">Log in</a>
+    </div>
+    <div class="hero-stats">
+      <div>
+        <div class="hero-stat-num">12k+</div>
+        <div class="hero-stat-label">Students</div>
+      </div>
+      <div>
+        <div class="hero-stat-num">5k+</div>
+        <div class="hero-stat-label">Notes Shared</div>
+      </div>
+      <div>
+        <div class="hero-stat-num">98%</div>
+        <div class="hero-stat-label">Satisfaction</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-image-wrapper">
+    <img src="https://res.cloudinary.com/dcoegegrc/image/upload/q_auto/f_auto/v1778815198/hero-students_l4lknt.jpg"
+         alt="Students collaborating on notes" class="hero-image"
+         id="hero-img">
+  </div>
+</div>
+
+<!-- Top Content Section -->
+<section class="top-content">
+  <div class="top-content-header">
+    <h2>Top Content</h2>
+    <p>Explore the best notes on NoteNexus</p>
+  </div>
+  <div class="cards-grid" style="max-width:1200px;margin:0 auto;padding:0 2rem;">
+    <div class="card top-card reveal">
+      <div class="top-card-icon" style="background:#e0f5e5;color:var(--primary-color);">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+      </div>
+      <h3>Advanced Machine Learning</h3>
+      <p>Comprehensive notes on Neural Networks and Deep Learning architectures.</p>
+      <div class="top-card-meta"><span>By Dr. Smith</span><span>⭐ 4.9 (120 reviews)</span></div>
+    </div>
+    <div class="card top-card reveal anim-delay-2">
+      <div class="top-card-icon" style="background:#fff4e5;color:#ff9800;">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+      </div>
+      <h3>Physics 101: Mechanics</h3>
+      <p>Clear, handwritten-style notes covering kinematics and dynamics.</p>
+      <div class="top-card-meta"><span>By Prof. Johnson</span><span>⭐ 4.8 (95 reviews)</span></div>
+    </div>
+    <div class="card top-card reveal anim-delay-3">
+      <div class="top-card-icon" style="background:#e5f0ff;color:#2196f3;">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>
+      </div>
+      <h3>Web Dev Bootcamp</h3>
+      <p>Full stack web development cheat sheets and code snippets.</p>
+      <div class="top-card-meta"><span>By Sarah Lee</span><span>⭐ 5.0 (200 reviews)</span></div>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:3rem;">
+    <a href="{% url 'auth' %}?tab=login" class="hero-btn btn-secondary" style="display:inline-block;">Explore More →</a>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,186 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Instructor Profile - NoteNexus{% endblock %}
+
+{% block navbar %}
+<a href="{% url 'instructor' %}">Dashboard</a>
+<a href="#">Categories</a>
+<a href="#">Browse Notes</a>
+<a href="{% url 'about' %}">About</a>
+<a href="{% url 'instructor_profile' %}" class="login-link">Profile</a>
+<!-- Notification Bell -->
+<a href="#" style="position: relative; margin-top: 5px;">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>
+    <span style="position: absolute; top: -5px; right: -8px; background: red; color: white; border-radius: 50%; padding: 2px 5px; font-size: 0.6rem; font-weight: bold;">3</span>
+</a>
+<a href="{% url 'logout' %}" style="margin-left: 1rem;">Logout</a>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+
+    <!-- Profile Header -->
+    <div class="profile-header">
+        <div class="profile-avatar-lg" style="background: var(--primary-color);">{{ initials }}</div>
+        <div class="profile-header-info">
+            <h2>{{ display_name }}</h2>
+            <p>{{ role_label }} &bull; Joined {{ joined_date|date:"M Y" }}</p>
+            <div class="profile-badges">
+                <span class="tag" style="background: #e0f5e5; color: var(--primary-color);">Verified Instructor</span>
+                <span class="tag" style="background: #e5f0ff; color: #2196f3;">{{ profile_stats.notes_uploaded }} Notes</span>
+                <span class="tag" style="background: #fff4e5; color: #ff9800;">{{ profile_stats.downloads }} Downloads</span>
+                <span class="tag" style="background: #f3e5f5; color: #9c27b0;">{{ profile_stats.views }} Views</span>
+            </div>
+        </div>
+        <div class="profile-header-actions">
+            <button class="btn-submit" style="width: auto; padding: 0.5rem 1.2rem; margin-top: 0;">Delete Account</button>
+        </div>
+    </div>
+
+    <div class="profile-grid">
+        <!-- Left Column: Profile Settings -->
+        <div>
+            <h3 class="section-title">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="var(--primary-color)"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                Personal Information
+            </h3>
+            <div class="profile-card">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_profile">
+                    <div class="form-group">
+                        <label for="fullname">Full Name</label>
+                        <input type="text" id="fullname" name="full_name" value="{{ display_name }}" placeholder="Your full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" value="{{ request.user.email }}" placeholder="Your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="department">Department</label>
+                        <input type="text" id="department" value="Physics" placeholder="Your department">
+                    </div>
+                    <div class="form-group">
+                        <label for="bio">Bio / About</label>
+                        <textarea id="bio" rows="3" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; resize: vertical;">Professor of Physics with 10+ years of teaching experience. Specializing in Thermodynamics and Quantum Mechanics.</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="university">University / Institution</label>
+                        <input type="text" id="university" value="MIT" placeholder="Your institution">
+                    </div>
+                    <div style="display: flex; gap: 0.8rem;">
+                        <button type="submit" class="btn-submit" style="width: auto; padding: 0.6rem 1.5rem; margin-top: 0;">Save Changes</button>
+                        <button type="button" class="btn-sm" style="padding: 0.6rem 1.5rem;">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Password Section -->
+            <h3 class="section-title" style="margin-top: 2.5rem;">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="var(--primary-color)"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+                Change Password
+            </h3>
+            <div class="profile-card">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="change_password">
+                    <div class="form-group">
+                        <label for="current-pass">Current Password</label>
+                        <input type="password" id="current-pass" name="old_password" placeholder="Enter current password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="new-pass">New Password</label>
+                        <input type="password" id="new-pass" name="new_password1" placeholder="Enter new password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm-pass">Confirm New Password</label>
+                        <input type="password" id="confirm-pass" name="new_password2" placeholder="Confirm new password" required>
+                    </div>
+                    <button type="submit" class="btn-submit" style="width: auto; padding: 0.6rem 1.5rem; margin-top: 0;">Update Password</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Right Column: Email & Settings -->
+        <div>
+            <!-- Direct Email Section -->
+            <h3 class="section-title">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="var(--primary-color)"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                Send an Email
+            </h3>
+            <div class="profile-card">
+                <p style="font-size: 0.9rem; color: var(--text-gray); margin-bottom: 1rem;">Directly email students, other instructors, or administration for queries & connecting.</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="send_email">
+                    <div class="form-group">
+                        <label for="id_to_email">To (Email Address)</label>
+                        <input type="email" id="id_to_email" name="to_email" placeholder="recipient@example.com" required
+                            style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit;">
+                    </div>
+                    <div class="form-group">
+                        <label for="id_subject">Subject</label>
+                        <input type="text" id="id_subject" name="subject" placeholder="e.g. Regarding your Lab Report submission" required
+                            style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit;"
+                            minlength="3" maxlength="200">
+                    </div>
+                    <div class="form-group">
+                        <label for="id_message">Message</label>
+                        <textarea id="id_message" name="message" placeholder="Type your message here..." required rows="5"
+                            style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; resize: vertical;"
+                            minlength="10" maxlength="5000"></textarea>
+                    </div>
+                    <button type="submit" class="btn-submit" style="width: auto; padding: 0.6rem 1.5rem; margin-top: 0;">
+                        Send Email
+                    </button>
+                </form>
+            </div>
+
+            <!-- Teaching Stats -->
+            <h3 class="section-title" style="margin-top: 2.5rem;">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="var(--primary-color)"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+                Teaching Overview
+            </h3>
+            <div class="profile-card">
+                <div class="pref-item" style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+                    <div><strong>Total Notes Uploaded</strong></div>
+                    <span style="font-size: 1.2rem; font-weight: 700; color: var(--primary-color);">{{ profile_stats.notes_uploaded }}</span>
+                </div>
+                <div class="pref-item" style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+                    <div><strong>Total Downloads</strong></div>
+                    <span style="font-size: 1.2rem; font-weight: 700; color: #2196f3;">{{ profile_stats.downloads }}</span>
+                </div>
+                <div class="pref-item" style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+                    <div><strong>Total Views</strong></div>
+                    <span style="font-size: 1.2rem; font-weight: 700; color: #ff9800;">{{ profile_stats.views }}</span>
+                </div>
+                <div class="pref-item">
+                    <div><strong>Student Questions Answered</strong></div>
+                    <span style="font-size: 1.2rem; font-weight: 700; color: #9c27b0;">89</span>
+                </div>
+            </div>
+
+            <!-- Notification Preferences -->
+            <h3 class="section-title" style="margin-top: 2.5rem;">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="var(--primary-color)"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+                Notification Preferences
+            </h3>
+            <div class="profile-card">
+                <div class="pref-item">
+                    <div><strong>Student Doubt Alerts</strong><p style="font-size: 0.85rem; color: var(--text-gray);">Get notified when students ask questions on your notes</p></div>
+                    <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                </div>
+                <div class="pref-item">
+                    <div><strong>Upload Review Alerts</strong><p style="font-size: 0.85rem; color: var(--text-gray);">Be notified when students submit notes for review</p></div>
+                    <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                </div>
+                <div class="pref-item">
+                    <div><strong>Weekly Analytics Report</strong><p style="font-size: 0.85rem; color: var(--text-gray);">Receive a weekly summary of engagement stats</p></div>
+                    <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

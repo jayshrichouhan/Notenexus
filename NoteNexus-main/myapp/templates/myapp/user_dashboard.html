@@ -1,0 +1,719 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}User Dashboard - NoteNexus{% endblock %}
+
+{% block navbar %}
+<a href="#">Browse Notes</a>
+<a href="{% url 'about' %}">About</a>
+<a href="{% url 'user_profile' %}">Profile</a>
+<a href="{% url 'logout' %}" class="login-link">Logout</a>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- 1. Personalized Header -->
+    <div class="dashboard-header">
+        <div>
+            <h2>Welcome, {{ request.user.get_full_name|default:request.user.username }} 👋</h2>
+            <p>Ready to continue your learning journey?</p>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="stats-grid">
+        <div class="stat-card reveal anim-delay-1">
+            <div class="stat-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                    <path
+                        d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+                </svg></div>
+            <div class="stat-info">
+                <h4>Total Notes</h4>
+                <p>{{ dashboard_stats.total_notes }}</p>
+            </div>
+        </div>
+        <div class="stat-card reveal anim-delay-2">
+            <div class="stat-icon green"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                    <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+                </svg></div>
+            <div class="stat-info">
+                <h4>Student Notes</h4>
+                <p>{{ dashboard_stats.student_notes }}</p>
+            </div>
+        </div>
+        <div class="stat-card reveal anim-delay-3">
+            <div class="stat-icon orange"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                    <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z" />
+                </svg></div>
+            <div class="stat-info">
+                <h4>Instructor Notes</h4>
+                <p>{{ dashboard_stats.instructor_notes }}</p>
+            </div>
+        </div>
+        <div class="stat-card reveal anim-delay-4">
+            <div class="stat-icon purple"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                    <path
+                        d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
+                </svg></div>
+            <div class="stat-info">
+                <h4>Pending Notes</h4>
+                <p>{{ dashboard_stats.pending_notes }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Upload Option -->
+    <div class="upload-section">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+            <div>
+                <h3>Upload Notes</h3>
+                <p style="margin: 0; color: #6b7280; font-size: 0.95rem;">Open the upload for submitting your notes.</p>
+            </div>
+            <button id="open-user-upload-tab" class="btn-submit" type="button" style="padding: 0.7rem 1rem;">Open Upload
+                Tab</button>
+        </div>
+    </div>
+
+
+    <div id="user-upload-tab-overlay"
+        style="display: none; position: fixed; inset: 0; z-index: 1100; background: rgba(15, 23, 42, 0.6); overflow-y: auto; padding: 3rem 1rem;">
+        <div
+            style="max-width: 840px; margin: 0 auto; background: white; border-radius: 24px; box-shadow: 0 30px 80px rgba(15, 23, 42, 0.25); padding: 2rem; position: relative;">
+            <button id="close-user-upload-tab" type="button"
+                style="position: absolute; top: 1rem; right: 1rem; border: none; background: transparent; color: #475569; font-size: 1.2rem; cursor: pointer;">✕</button>
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
+                <div>
+                    <h3 style="margin: 0;">Upload Note</h3>
+                    <p style="margin: 0; color: #475569; font-size: 0.96rem;">Fill all fields.</p>
+                </div>
+                <span
+                    style="background: #e2e8f0; color: #475569; padding: 0.65rem 0.9rem; border-radius: 999px; font-size: 0.88rem;">Upload</span>
+            </div>
+
+            {% if upload_success %}
+            <div class="notice success"
+                style="margin-bottom: 1rem; padding: 1rem; background: #e6ffed; border: 1px solid #a7f3d0; color: #065f46; border-radius: 10px;">
+                Note uploaded successfully. <a href="{{ upload_success.document_url }}" target="_blank" rel="noopener"
+                    style="color: #047857; font-weight: 700;">Open document</a>
+            </div>
+            {% endif %}
+
+            <form id="user-upload-form" method="post" enctype="multipart/form-data" style="display: grid; gap: 1rem;">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="id_title">Title</label>
+                    <input type="text" id="id_title" name="title" value="{{ note_form.title.value|default_if_none:'' }}"
+                        placeholder="Enter note title" required
+                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit;">
+                    {{ note_form.title.errors }}
+                </div>
+                <div class="form-group">
+                    <label for="id_description">Description</label>
+                    <textarea id="id_description" name="description" placeholder="Enter note description" required
+                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit;">{{ note_form.description.value|default_if_none:'' }}</textarea>
+                    {{ note_form.description.errors }}
+                </div>
+                <div class="form-group">
+                    <label for="id_uploader_name">Your name</label>
+                    <input type="text" id="id_uploader_name" name="uploader_name"
+                        value="{{ note_form.uploader_name.value|default_if_none:'' }}" placeholder="Enter your name"
+                        required
+                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit;">
+                    {{ note_form.uploader_name.errors }}
+                </div>
+                <div class="form-group">
+                    <label for="id_document">Note file</label>
+                    <input type="file" id="id_document" name="document"
+                        accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.zip" required
+                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit;">
+                    {{ note_form.document.errors }}
+                </div>
+                <div style="display: grid; gap: 1rem;">
+                    <button id="preview-user-upload" class="btn-sm btn-outline-primary" type="button"
+                        style="width: auto; padding: 0.7rem 1rem;">Preview Upload</button>
+                    <button class="btn-submit" type="submit" style="width: auto; padding: 0.7rem 1rem;">Upload
+                        Note</button>
+                </div>
+                <div id="user-upload-preview"
+                    style="display: none; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1rem;">
+                    <h4 style="margin-top: 0;">Upload Preview</h4>
+                    <p style="margin: 0.4rem 0;"><strong>Title:</strong> <span id="preview-title"></span></p>
+                    <p style="margin: 0.4rem 0;"><strong>Description:</strong> <span id="preview-description"></span>
+                    </p>
+                    <p style="margin: 0.4rem 0;"><strong>Name:</strong> <span id="preview-uploader-name"></span></p>
+                    <p style="margin: 0.4rem 0;"><strong>File:</strong> <span id="preview-file-name"></span> (<span
+                            id="preview-file-type"></span>, <span id="preview-file-size"></span>)</p>
+                    <div id="preview-file-note" style="margin-top: 0.75rem; color: #475569; font-size: 0.95rem;"></div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- PYQ Upload Modal -->
+    <div id="user-pyq-tab-overlay"
+        style="display: none; position: fixed; inset: 0; z-index: 1100; background: rgba(15, 23, 42, 0.6); overflow-y: auto; padding: 3rem 1rem;">
+        <div
+            style="max-width: 840px; margin: 0 auto; background: white; border-radius: 24px; box-shadow: 0 30px 80px rgba(15, 23, 42, 0.25); padding: 2rem; position: relative;">
+            <button id="close-user-pyq-tab" type="button"
+                style="position: absolute; top: 1rem; right: 1rem; border: none; background: transparent; color: #475569; font-size: 1.2rem; cursor: pointer;">✕</button>
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
+                <div>
+                    <h3 style="margin: 0;">Upload Previous Year Questions (PYQ)</h3>
+                    <p style="margin: 0; color: #475569; font-size: 0.96rem;">Help students prepare with past papers.
+                    </p>
+                </div>
+                <span
+                    style="background: #e2e8f0; color: #475569; padding: 0.65rem 0.9rem; border-radius: 999px; font-size: 0.88rem;">Exam
+                    Paper</span>
+            </div>
+
+            {% if pyq_upload_success %}
+            <div class="notice success"
+                style="margin-bottom: 1rem; padding: 1rem; background: #e6ffed; border: 1px solid #a7f3d0; color: #065f46; border-radius: 10px;">
+                PYQ uploaded successfully. <a href="{{ pyq_upload_success.document_url }}" target="_blank"
+                    rel="noopener" style="color: #047857; font-weight: 700;">Open document</a>
+            </div>
+            {% endif %}
+
+            <form id="user-pyq-form" method="post" enctype="multipart/form-data" style="display: grid; gap: 1rem;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="upload_pyq">
+
+                <div class="form-group">
+                    <label for="id_paper_title">Paper Title</label>
+                    <input type="text" id="id_paper_title" name="paper_title"
+                        value="{{ pyq_form.paper_title.value|default_if_none:'' }}"
+                        placeholder="e.g. Data Structures Final Exam" required
+                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit;">
+                    {{ pyq_form.paper_title.errors }}
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label for="id_year">Year</label>
+                        <input type="number" id="id_year" name="year"
+                            value="{{ pyq_form.year.value|default_if_none:'' }}" placeholder="2024" min="1990"
+                            max="2100" required
+                            style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit;">
+                        {{ pyq_form.year.errors }}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_semester">Semester</label>
+                        <input type="text" id="id_semester" name="semester"
+                            value="{{ pyq_form.semester.value|default_if_none:'' }}" placeholder="e.g. Sem 4" required
+                            style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit;">
+                        {{ pyq_form.semester.errors }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_university">University</label>
+                    <input type="text" id="id_university" name="university"
+                        value="{{ pyq_form.university.value|default_if_none:'' }}" placeholder="e.g. Delhi University"
+                        required
+                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit;">
+                    {{ pyq_form.university.errors }}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_pyq_type">Exam Type</label>
+                    <select id="id_pyq_type" name="pyq_type" required
+                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit;">
+                        <option value="">-- Select Exam Type --</option>
+                        <option value="midterm">Midterm</option>
+                        <option value="endterm">Endterm</option>
+                        <option value="quiz">Quiz</option>
+                        <option value="assignment">Assignment</option>
+                        <option value="other">Other</option>
+                    </select>
+                    {{ pyq_form.pyq_type.errors }}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_document">Document/File</label>
+                    <input type="file" id="id_document" name="document"
+                        accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.doc,.docx,.ppt,.pptx,.txt,.zip" required
+                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit;">
+                    {{ pyq_form.document.errors }}
+                </div>
+
+                <button class="btn-submit" type="submit" style="width: 100%; padding: 0.75rem 1rem;">Upload PYQ</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 5. My PYQs -->
+    <div
+        style="display: flex; justify-content: space-between; align-items: center; margin-top: 4rem; margin-bottom: 1.5rem;">
+        <h3 class="section-title" style="margin-bottom: 0;">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="var(--primary-color)">
+                <path
+                    d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm-2 16H8v-2h4v2zm4-5H8v-2h8v2zm0-4H8V7h8v2z" />
+            </svg>
+            My Previous Year Questions (PYQs)
+        </h3>
+        <button id="open-user-pyq-tab" class="btn-submit" type="button"
+            style="width: auto; padding: 0.5rem 1rem; margin-top: 0;">+ Upload PYQ</button>
+    </div>
+
+    <div class="pyq-list">
+        {% for pyq in my_pyqs %}
+        <div class="pyq-card">
+            <div class="pyq-info">
+                <div class="pyq-icon">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                        <path
+                            d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z" />
+                    </svg>
+                </div>
+                <div class="pyq-details">
+                    <h4>{{ pyq.paper_title }}</h4>
+                    <div class="pyq-meta-tags">
+                        <span class="pyq-tag"><strong>Year:</strong> {{ pyq.year }}</span>
+                        <span class="pyq-tag"><strong>University:</strong> {{ pyq.university }}</span>
+                        <span class="pyq-tag"><strong>Sem:</strong> {{ pyq.semester }}</span>
+                        <span class="pyq-tag"><strong>Type:</strong> {{ pyq.get_pyq_type_display }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="pyq-actions">
+                <button onclick="window.open('{{ pyq.document_url }}', '_blank')" class="btn-sm"
+                    style="background: transparent; border: 1px solid var(--border-color);">View</button>
+                <a href="{% url 'pyq_download' pyq.id %}" class="btn-sm btn-primary-sm"
+                    style="text-decoration: none; display: inline-block; text-align: center;">Download</a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="card" style="padding: 1.25rem;">
+            <p style="margin: 0; color: var(--text-gray);">You have not uploaded any PYQs yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- 3. My Uploads -->
+    <h3 class="section-title">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="var(--primary-color)">
+            <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2zm0 15l-5-2.18L7 18V5h10v13z" />
+        </svg>
+        My Uploads
+    </h3>
+    <div class="cards-grid">
+        {% for note in my_uploads %}
+        {% include 'myapp/_note_card.html' %}
+        {% empty %}
+        <div class="card" style="padding: 1.25rem;">
+            <p style="margin: 0; color: var(--text-gray);">You have not uploaded any notes yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+
+    <!-- 2. Search + Filters -->
+    <form method="GET" class="toolbar">
+
+        <div class="search-bar">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="var(--text-gray)">
+                <path
+                    d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+            </svg>
+
+            <input type="text" name="search" placeholder="Search notes, instructors...">
+        </div>
+        <button type="submit" hidden></button>
+    </form>
+
+    <!-- Available Notes -->
+    <h3 class="section-title" style="margin-top: 2rem;">Available Notes</h3>
+    <div class="cards-grid">
+        {% for note in available_notes %}
+        {% include 'myapp/_note_card.html' %}
+        {% empty %}
+        <div class="card" style="padding: 1.25rem;">
+            <p style="margin: 0; color: var(--text-gray);">No uploaded notes are available yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <h3 class="section-title" style="margin-top: 2rem;">Available PYQs</h3>
+    <div class="pyq-list">
+        {% for pyq in available_pyqs %}
+        <div class="pyq-card">
+            <div class="pyq-info">
+                <div class="pyq-icon">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                        <path
+                            d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z" />
+                    </svg>
+                </div>
+                <div class="pyq-details">
+                    <h4>{{ pyq.paper_title }}</h4>
+                    <div class="pyq-meta-tags">
+                        <span class="pyq-tag"><strong>Year:</strong> {{ pyq.year }}</span>
+                        <span class="pyq-tag"><strong>University:</strong> {{ pyq.university }}</span>
+                        <span class="pyq-tag"><strong>Sem:</strong> {{ pyq.semester }}</span>
+                        <span class="pyq-tag"><strong>Type:</strong> {{ pyq.get_pyq_type_display }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="pyq-actions">
+                <button onclick="window.open('{{ pyq.document_url }}', '_blank')" class="btn-sm"
+                    style="background: transparent; border: 1px solid var(--border-color);">View</button>
+                <a href="{% url 'pyq_download' pyq.id %}" class="btn-sm btn-primary-sm"
+                    style="text-decoration: none; display: inline-block; text-align: center;">Download</a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="card" style="padding: 1.25rem;">
+            <p style="margin: 0; color: var(--text-gray);">No PYQs are available yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+
+    <!-- Community Discussions Section -->
+    <div
+        style="display: flex; justify-content: space-between; align-items: center; margin-top: 4rem; margin-bottom: 1.5rem;">
+        <h3 class="section-title" style="margin-bottom: 0;">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="var(--primary-color)">
+                <path
+                    d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h10c.55 0 1-.45 1-1z" />
+            </svg>
+            Community Discussions & Doubts
+        </h3>
+        <button class="btn-submit" id="open-user-doubt-tab" style="width: auto; padding: 0.5rem 1rem; margin-top: 0;">+
+            Ask a Doubt</button>
+    </div>
+
+    <!-- Ask a Doubt Overlay -->
+    <div id="user-doubt-overlay"
+        style="display: none; position: fixed; inset: 0; z-index: 1100; background: rgba(15, 23, 42, 0.6); overflow-y: auto; padding: 3rem 1rem;">
+        <div
+            style="max-width: 840px; margin: 0 auto; background: white; border-radius: 24px; box-shadow: 0 30px 80px rgba(15, 23, 42, 0.25); padding: 2rem; position: relative;">
+            <button id="close-user-doubt-tab" type="button"
+                style="position: absolute; top: 1rem; right: 1rem; border: none; background: transparent; color: #475569; font-size: 1.2rem; cursor: pointer;">✕</button>
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
+                <div>
+                    <h3 style="margin: 0;">Ask a Doubt</h3>
+                    <p style="margin: 0; color: #475569; font-size: 0.96rem;">Share your question with the
+                        community.</p>
+                </div>
+                <span
+                    style="background: #e2e8f0; color: #475569; padding: 0.65rem 0.9rem; border-radius: 999px; font-size: 0.88rem;">Community</span>
+            </div>
+
+            <form id="user-doubt-form" method="post" action="{% url 'ask_doubt' %}" style="display: grid; gap: 1rem;">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{% url 'user' %}">
+
+                <div class="form-group">
+                    <label for="id_question">Your Question</label>
+                    <textarea id="id_question" name="question" placeholder="Ask your question in detail..." rows="6"
+                        required
+                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; resize: vertical;"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_subject">Subject</label>
+                    <select id="id_subject" name="subject" required
+                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit;">
+                        <option value="">-- Select a subject --</option>
+                        <option value="programming">Programming</option>
+                        <option value="web_dev">Web Development</option>
+                        <option value="database">Database</option>
+                        <option value="dsa">Data Structures & Algorithms</option>
+                        <option value="machine_learning">Machine Learning</option>
+                        <option value="cloud">Cloud Computing</option>
+                        <option value="devops">DevOps</option>
+                        <option value="cybersecurity">Cybersecurity</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_askedby">Asked By</label>
+                    <input type="text" id="id_askedby"
+                        value="{{ request.user.get_full_name|default:request.user.username }}" disabled
+                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; background-color: #f3f4f6; cursor: not-allowed;">
+                </div>
+
+                <button class="btn-submit" type="submit" style="width: 100%; padding: 0.75rem 1rem;">Post Your
+                    Question</button>
+            </form>
+        </div>
+    </div>
+
+
+    <div class="discussion-list">
+        {% for doubt in community_doubts %}
+        <div class="discussion-thread" style="cursor: pointer;"
+            onclick="if(event.target.closest('.doubt-details') && event.target.closest('textarea, button, input')) return; toggleDoubtDetails(this)">
+            <!-- Avatar -->
+            {% if doubt.asked_by.groups.first.name == 'Instructors' %}
+            <div class="avatar" style="background: #d1fae5; color: #065f46;">
+            {% else %}
+            <div class="avatar" style="background: #e0e7ff; color: #3730a3;">
+            {% endif %}
+                {{ doubt.asked_by.get_full_name|first|upper|default:"U" }}
+            </div>
+
+            <!-- Thread Content -->
+            <div class="thread-content" style="flex: 1;">
+                <div class="thread-header"
+                    style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1.5rem;">
+                    <div style="flex: 1; min-width: 0;">
+                        <h4
+                            style="margin: 0 0 0.5rem 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            {{ doubt.question|truncatewords:15 }}</h4>
+                    </div>
+                    <div
+                        style="display: flex; flex-direction: column; gap: 0.75rem; align-items: flex-end; white-space: nowrap; flex-shrink: 0;">
+                        <span class="tag" {% if doubt.is_answered %}
+                            style="background: #e0f5e5; color: var(--primary-color);" {% else %}
+                            style="background: #fff4e5; color: #ff9800;" {% endif %}>
+                            {% if doubt.is_answered %}✓ Resolved{% else %}Unresolved{% endif %}
+                        </span>
+                        {% if doubt.asked_by.id == request.user.id %}
+                        {% if not doubt.is_answered %}
+                        <form method="post" style="display: inline; margin: 0;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="mark_doubt_solved">
+                            <input type="hidden" name="doubt_id" value="{{ doubt.id }}">
+                            <button type="submit"
+                                style="background: #047857; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer; font-weight: 500; transition: background 0.2s;"
+                                onmouseover="this.style.background='#065f46'"
+                                onmouseout="this.style.background='#047857'">Mark Solved</button>
+                        </form>
+                        {% else %}
+                        <form method="post" style="display: inline; margin: 0;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="unmark_doubt_solved">
+                            <input type="hidden" name="doubt_id" value="{{ doubt.id }}">
+                            <button type="submit"
+                                style="background: #d97706; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer; font-weight: 500; transition: background 0.2s;"
+                                onmouseover="this.style.background='#b45309'"
+                                onmouseout="this.style.background='#d97706'">Unmark Solved</button>
+                        </form>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="thread-meta" style="margin-bottom: 0.75rem;">
+                    Asked by <strong>{{ doubt.asked_by.get_full_name|default:doubt.asked_by.username }}</strong> in
+                    <a href="#" style="color: var(--primary-color);">{{ doubt.get_subject_display }}</a> •
+                    <span title="{{ doubt.created_at }}">{{ doubt.created_at|timesince }} ago</span>
+                </div>
+                <div class="thread-replies">
+                    {% if doubt.replies.count > 0 %}
+                    <span class="reply-badge">{{ doubt.replies.filter|length }} Replies</span>
+                    {% endif %}
+                    <span style="color: #6b7280;">{{ doubt.reply_count }} discussion{{ doubt.reply_count|pluralize }}</span>
+                </div>
+
+                <!-- Hidden Details -->
+                <div class="doubt-details"
+                    style="display: none; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e2e8f0;">
+                    <!-- Full Question -->
+                    <div style="margin-bottom: 1.5rem;">
+                        <h4 style="margin-bottom: 0.5rem;">Question Details</h4>
+                        <p style="color: #475569; line-height: 1.6;">{{ doubt.question }}</p>
+                    </div>
+
+                    <!-- Replies Section -->
+                    <div style="margin-bottom: 1.5rem;">
+                        <h4 style="margin-bottom: 1rem;">Replies ({{ doubt.reply_count }})</h4>
+
+                        <div
+                            style="max-height: 400px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem;">
+
+                            {% for reply in doubt.replies.all %}
+                            <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #e2e8f0;">
+
+                                <div style="display: flex; gap: 0.75rem; margin-bottom: 0.5rem;">
+
+                                    {% if reply.is_instructor_reply %}
+                                    <div style="font-weight: 600; color: var(--primary-color);">
+                                    {% else %}
+                                    <div style="color: #6b7280;">
+                                    {% endif %}
+
+                                        {{ reply.replied_by.get_full_name|default:reply.replied_by.username }}
+
+                                        {% if reply.is_instructor_reply %}
+                                        <span style="background: var(--primary-color); color: white; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; margin-left: 0.5rem;">Instructor</span>
+                                        {% endif %}
+
+                                    </div>
+
+                                    <span style="color: #9ca3af; font-size: 0.88rem;">
+                                        {{ reply.created_at|timesince }} ago
+                                    </span>
+
+                                </div>
+
+                                <p style="color: #475569; margin: 0; line-height: 1.6;">
+                                    {{ reply.reply_text }}
+                                </p>
+
+                            </div>
+
+                            {% empty %}
+                            <p style="color: #9ca3af; text-align: center; padding: 1rem;">
+                                No replies yet. Be the first to reply!
+                            </p>
+                            {% endfor %}
+
+                        </div>
+                    </div>
+
+                    <!-- Reply Form -->
+                    <form method="post" style="display: grid; gap: 1rem;">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="reply_doubt">
+                        <input type="hidden" name="doubt_id" value="{{ doubt.id }}">
+
+                        <div class="form-group">
+                            <label for="reply_text_{{ doubt.id }}">Your Reply</label>
+                            <textarea id="reply_text_{{ doubt.id }}" name="reply_text"
+                                placeholder="Write your reply here..." rows="3" required
+                                style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; resize: vertical;"></textarea>
+                        </div>
+                        <button class="btn-submit" type="submit" style="width: auto; padding: 0.65rem 1.5rem;">Post
+                            Reply</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div style="padding: 2rem; text-align: center; color: #9ca3af;">
+            <p>No doubts posted yet. Be the first to <button id="open-user-doubt-tab"
+                    style="background: none; border: none; color: var(--primary-color); cursor: pointer; font-weight: 600;">ask
+                    a doubt</button>!</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    function toggleDoubtDetails(element) {
+        var details = element.querySelector('.doubt-details');
+        if (details) {
+            details.style.display = details.style.display === 'none' ? 'block' : 'none';
+        }
+    }
+
+    (function () {
+        var openButton = document.getElementById('open-user-upload-tab');
+        var closeButton = document.getElementById('close-user-upload-tab');
+        var overlay = document.getElementById('user-upload-tab-overlay');
+        var previewButton = document.getElementById('preview-user-upload');
+        var previewPanel = document.getElementById('user-upload-preview');
+        var titleInput = document.getElementById('id_title');
+        var descriptionInput = document.getElementById('id_description');
+        var nameInput = document.getElementById('id_uploader_name');
+        var fileInput = document.getElementById('id_document');
+        var titlePreview = document.getElementById('preview-title');
+        var descriptionPreview = document.getElementById('preview-description');
+        var namePreview = document.getElementById('preview-uploader-name');
+        var fileNamePreview = document.getElementById('preview-file-name');
+        var fileTypePreview = document.getElementById('preview-file-type');
+        var fileSizePreview = document.getElementById('preview-file-size');
+        var fileNote = document.getElementById('preview-file-note');
+
+        if (!openButton || !closeButton || !overlay || !previewButton) return;
+
+        var toggleOverlay = function (show) {
+            overlay.style.display = show ? 'block' : 'none';
+            if (show) {
+                document.body.style.overflow = 'hidden';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                document.body.style.overflow = '';
+            }
+        };
+
+        openButton.addEventListener('click', function () {
+            toggleOverlay(true);
+        });
+
+        closeButton.addEventListener('click', function () {
+            toggleOverlay(false);
+        });
+
+        var formatBytes = function (bytes) {
+            if (bytes === 0) return '0 B';
+            var sizes = ['B', 'KB', 'MB', 'GB'];
+            var i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return parseFloat((bytes / Math.pow(1024, i)).toFixed(1)) + ' ' + sizes[i];
+        };
+
+        previewButton.addEventListener('click', function () {
+            if (!titleInput || !descriptionInput || !nameInput || !fileInput) return;
+            var file = fileInput.files && fileInput.files[0];
+
+            titlePreview.textContent = titleInput.value || 'Untitled note';
+            descriptionPreview.textContent = descriptionInput.value || 'No description provided.';
+            namePreview.textContent = nameInput.value || 'Anonymous';
+
+            if (file) {
+                fileNamePreview.textContent = file.name;
+                fileTypePreview.textContent = file.type || 'Unknown format';
+                fileSizePreview.textContent = formatBytes(file.size);
+                fileNote.textContent = 'Selected document will be uploaded as part of your note.';
+            } else {
+                fileNamePreview.textContent = 'No file selected';
+                fileTypePreview.textContent = '-';
+                fileSizePreview.textContent = '-';
+                fileNote.textContent = 'Choose a file first to preview upload details.';
+            }
+
+            previewPanel.style.display = 'block';
+            previewPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    })();
+
+    // PYQ Upload Modal
+    (function () {
+        var openButton = document.getElementById('open-user-pyq-tab');
+        var closeButton = document.getElementById('close-user-pyq-tab');
+        var overlay = document.getElementById('user-pyq-tab-overlay');
+
+        if (!openButton || !closeButton || !overlay) return;
+
+        var toggleOverlay = function (show) {
+            overlay.style.display = show ? 'block' : 'none';
+            if (show) {
+                document.body.style.overflow = 'hidden';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                document.body.style.overflow = '';
+            }
+        };
+
+        openButton.addEventListener('click', function () {
+            toggleOverlay(true);
+        });
+
+        closeButton.addEventListener('click', function () {
+            toggleOverlay(false);
+        });
+
+        overlay.addEventListener('click', function (e) {
+            if (e.target === overlay) {
+                toggleOverlay(false);
+            }
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && overlay.style.display === 'block') {
+                toggleOverlay(false);
+            }
+        });
+    })();
+
+
+</script>
+{% endblock %}

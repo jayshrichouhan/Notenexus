@@ -1,0 +1,73 @@
+<div class="note-card reveal">
+    <div class="note-card-thumb">
+        <div class="file-badge">{{ note.original_filename|slice:"-4:"|upper }}</div>
+        <svg viewBox="0 0 24 24" width="48" height="48" fill="var(--primary-color)">
+            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+        </svg>
+    </div>
+    <div class="note-card-body">
+        <div class="note-tags">
+            <span class="tag">{{ note.get_uploader_role_display }}</span>
+            <span class="tag">{{ note.status|title }}</span>
+        </div>
+        <h3>{{ note.title }}</h3>
+        <p style="font-size: 0.9rem; color: var(--text-gray); margin: 0.4rem 0 0.8rem;">{{ note.description|default:"No description provided." }}</p>
+        <div class="note-meta">
+            <span>By {{ note.uploader_name|default:note.uploader.username }}</span>
+            <span>{{ note.created_at|date:"M d, Y" }}</span>
+        </div>
+        <div class="note-stats">
+            <span>Views: {{ note.view_count }}</span>
+            <span>Downloads: {{ note.download_count }}</span>
+            <span>Stars: {{ note.average_rating }} ({{ note.rating_count }})</span>
+            <span>Comments: {{ note.comment_count }}</span>
+        </div>
+    </div>
+    <div class="note-card-footer" style="gap: 0.75rem; flex-wrap: wrap;">
+        <button class="btn-icon note-preview-trigger" type="button" data-preview-url="{% url 'note_view' note.id %}" data-preview-title="{{ note.title }}">View</button>
+        {% if note.status == 'published' %}
+        <a class="btn-sm btn-primary-sm" href="{% url 'note_download' note.id %}" target="_blank" rel="noopener" style="border-radius: 6px;">Download</a>
+        <button class="btn-sm btn-outline-primary note-feedback-toggle" type="button" data-feedback-target="note-feedback-{{ note.id }}">Star / Comment</button>
+        {% else %}
+        <span class="tag" style="background: #fff4e5; color: #ff9800;">{{ note.get_status_display }}</span>
+        {% endif %}
+        {% if note.uploader_id == request.user.id %}
+        <form class="note-delete-form" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="delete_note">
+            <input type="hidden" name="note_id" value="{{ note.id }}">
+            <button class="btn-sm btn-reject" type="submit">Delete</button>
+        </form>
+        {% endif %}
+    </div>
+    {% if note.status == 'published' %}
+    <form id="note-feedback-{{ note.id }}" class="note-feedback-form" method="post" hidden>
+        {% csrf_token %}
+        <input type="hidden" name="action" value="note_feedback">
+        <input type="hidden" name="note_id" value="{{ note.id }}">
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+            <label for="stars-{{ note.id }}" style="font-size: 0.85rem; font-weight: 700;">Stars</label>
+            <select id="stars-{{ note.id }}" name="stars" style="padding: 0.45rem; border: 1px solid var(--border-color); border-radius: 6px;">
+                <option value="">Rate</option>
+                <option value="5">5</option>
+                <option value="4">4</option>
+                <option value="3">3</option>
+                <option value="2">2</option>
+                <option value="1">1</option>
+            </select>
+        </div>
+        <textarea name="comment" rows="2" placeholder="Add a comment" style="width: 100%; padding: 0.65rem; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit;"></textarea>
+        <button class="btn-sm btn-outline-primary" type="submit" style="width: fit-content;">Submit Feedback</button>
+        {% if note.comments.all %}
+        <div style="display: grid; gap: 1.5rem; margin-top: 0.25rem;">
+            {% for comment in note.comments.all|slice:":2" %}
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.6rem;">
+                <strong style="font-size: 0.8rem;">{{ comment.user.get_full_name|default:comment.user.username }}</strong>
+                <p style="margin: 0.25rem 0 0; color: var(--text-gray); font-size: 0.86rem;">{{ comment.comment }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </form>
+    {% endif %}
+</div>
